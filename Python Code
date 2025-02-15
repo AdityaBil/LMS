@@ -1,0 +1,106 @@
+#Lms
+
+class Book:
+    def __init__(self, title, author, genre):
+        self.title = title
+        self.author = author
+        self.genre = genre
+        self.is_available = True
+
+class Article:
+    def __init__(self, title, author, genre, pages):
+        self.title = title
+        self.author = author
+        self.genre = genre
+        self.pages = pages
+        self.is_available = True
+
+class Library:
+    def __init__(self):
+        self.books = []
+        self.borrowed_books = {}
+        self.articles = []
+        self.borrowed_articles = {}
+
+    def add_book(self, title, author, genre):
+        book = Book(title, author, genre)
+        self.books.append(book)
+
+    def display_books(self):
+        print("\nAvailable Books:")
+        for book in self.books:
+            if book.is_available:
+                print(f'- {book.title} by {book.author} ({book.genre})')
+
+    def borrow_book(self, title, user):
+        for book in self.books:
+            if book.title.lower() == title.lower() and book.is_available:
+                book.is_available = False
+                self.borrowed_books[title] = user
+                print(f'"{title}" has been borrowed by {user}.')
+                return
+        print(f'Sorry, "{title}" is not available.')
+
+    def return_book(self, title, user):
+        if title in self.borrowed_books and self.borrowed_books[title] == user:
+            for book in self.books:
+                if book.title.lower() == title.lower():
+                    book.is_available = True
+                    del self.borrowed_books[title]
+                    print(f'"{title}" has been returned by {user}.')
+                    return
+        print(f'Error: "{title}" was not borrowed by {user}.')
+
+    def add_article(self, title, author, genre, pages):
+        article = Article(title, author, genre, pages)
+        self.articles.append(article)
+
+    def display_articles(self):
+        print("\nAvailable Articles:")
+        for article in self.articles:
+          if article.is_available:
+            print(f'- {article.title} by {article.author} ({article.genre}, {article.pages} pages)')
+
+    def search_article(self,title):
+        for article in self.articles:
+          if article.title.lower() == article_title.lower():
+            print(f'The article "{article.title}" by {article.author} is available.')
+            break
+          else:
+            print(f'Sorry, "{article_title}" is not available.')
+
+
+    #def show(self):
+        #print(f'{self.title}, written by {self.author}, contents: {self.genre}, pages: {self.pages}')
+
+# Creating Library instance
+library = Library()
+library.add_book('Hyperspace', 'Michio Kaku', 'Hypothetical Physics')
+library.add_book('Atomic Habits', 'James Clear', 'Productivity')
+library.add_book('Theory of Everything', 'Stephen Hawking', 'Physics')
+library.add_book('How to Win Friends and Influence People', 'Dale Carnegie', 'Social Skill')
+library.add_book('Dark Horse', 'Nilotpal Mrinal', 'Fiction')
+library.add_article('Theory of Everything', 'Stephen Hawking', 'Future of Science', 10)
+
+print('What do you wanna read?')
+print("1. Book", "2. Article", "3.Search", "4. Exit")
+choice = int(input('Enter your choice: '))
+if choice == 1:
+    library.display_books()
+elif choice == 2:
+    library.display_articles()
+elif choice ==3:
+   user_title = input('Enter the title of the article: ')
+   library.search_articles(user_title)
+else:
+    print('Invalid choice')
+
+print('Do you wanna issue any book?')
+print('1. Yes', '2. No')
+issue_choice = int(input('Enter your choice: '))
+if issue_choice == 1:
+  book_choice = input('Enter the name of the book: ')
+  user = input('Enter your name: ')
+  library.borrow_book(book_choice, user)
+else:
+  print("Alright")
