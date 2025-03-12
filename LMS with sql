@@ -1,0 +1,88 @@
+import mysql.connector
+
+class LibraryManagementSystem:
+    def __init__(self):
+        self.db = mysql.connector.connect(
+            host="localhost",
+            user="root",  # Change to your MySQL username
+            password="-----",  # Change to your MySQL password
+            database="library_db"
+        )
+        self.cursor = self.db.cursor()
+
+    def add_book(self, title, author):
+        self.cursor.execute("INSERT INTO books (title, author) VALUES (%s, %s)", (title, author))
+        self.db.commit()
+        print("Book added successfully!")
+
+    def add_user(self, name):
+        self.cursor.execute("INSERT INTO users (name) VALUES (%s)", (name,))
+        self.db.commit()
+        print("User added successfully!")
+
+    def issue_book(self, book_id, user_id):
+        self.cursor.execute("SELECT available FROM books WHERE id = %s", (book_id,))
+        book = self.cursor.fetchone()
+        
+        if book and book[0]:
+            self.cursor.execute("INSERT INTO issued_books (book_id, user_id) VALUES (%s, %s)", (book_id, user_id))
+            self.cursor.execute("UPDATE books SET available = FALSE WHERE id = %s", (book_id,))
+            self.db.commit()
+            print("Book issued successfully!")
+        else:
+            print("Book is not available!")
+
+    def return_book(self, book_id):
+        self.cursor.execute("DELETE FROM issued_books WHERE book_id = %s", (book_id,))
+        self.cursor.execute("UPDATE books SET available = TRUE WHERE id = %s", (book_id,))
+        self.db.commit()
+        print("Book returned successfully!")
+
+    def list_books(self):
+        self.cursor.execute("SELECT * FROM books")
+        for book in self.cursor.fetchall():
+            print(book)
+
+    def list_users(self):
+        self.cursor.execute("SELECT * FROM users")
+        for user in self.cursor.fetchall():
+            print(user)
+
+    def run(self):
+        while True:
+            print("\nLibrary Management System")
+            print("1. Add Book")
+            print("2. Add User")
+            print("3. Issue Book")
+            print("4. Return Book")
+            print("5. List Books")
+            print("6. List Users")
+            print("7. Exit")
+            choice = input("Enter your choice: ")
+            
+            if choice == "1":
+                title = input("Enter book title: ")
+                author = input("Enter book author: ")
+                self.add_book(title, author)
+            elif choice == "2":
+                name = input("Enter user name: ")
+                self.add_user(name)
+            elif choice == "3":
+                book_id = int(input("Enter book ID: "))
+                user_id = int(input("Enter user ID: "))
+                self.issue_book(book_id, user_id)
+            elif choice == "4":
+                book_id = int(input("Enter book ID: "))
+                self.return_book(book_id)
+            elif choice == "5":
+                self.list_books()
+            elif choice == "6":
+                self.list_users()
+            elif choice == "7":
+                break
+            else:
+                print("Invalid choice! Try again.")
+
+if __name__ == "__main__":
+    lms = LibraryManagementSystem()
+    lms.run()
