@@ -5,7 +5,7 @@ class LibraryManagementSystem:
         self.db = mysql.connector.connect(
             host="localhost",
             user="root",  # Change to your MySQL username
-            password="-----",  # Change to your MySQL password
+            password="230805",  # Change to your MySQL password
             database="library_db"
         )
         self.cursor = self.db.cursor()
@@ -20,19 +20,30 @@ class LibraryManagementSystem:
         self.db.commit()
         print("User added successfully!")
 
-    def issue_book(self, book_id, user_id):
+    def issue_book(self, book_id, user_name):
+        # Check if book is available
         self.cursor.execute("SELECT available FROM books WHERE id = %s", (book_id,))
         book = self.cursor.fetchone()
-        
-        if book and book[0]:
-            self.cursor.execute("INSERT INTO issued_books (book_id, user_id) VALUES (%s, %s)", (book_id, user_id))
+
+        if book and book[0]:  # If book is available
+            # Check if the user exists
+            self.cursor.execute("SELECT id FROM users WHERE name = %s", (user_name,))
+            user = self.cursor.fetchone()
+
+            if not user:
+                print("User not found! Please add the user first.")
+                return
+
+            # Issue book to user
+            self.cursor.execute("INSERT INTO issued_books (book_id, user_name) VALUES (%s, %s)", (book_id, user_name))
             self.cursor.execute("UPDATE books SET available = FALSE WHERE id = %s", (book_id,))
             self.db.commit()
-            print("Book issued successfully!")
+            print(f"Book issued to {user_name} successfully!")
         else:
             print("Book is not available!")
 
     def return_book(self, book_id):
+        # Return book by deleting from issued_books table
         self.cursor.execute("DELETE FROM issued_books WHERE book_id = %s", (book_id,))
         self.cursor.execute("UPDATE books SET available = TRUE WHERE id = %s", (book_id,))
         self.db.commit()
@@ -48,6 +59,11 @@ class LibraryManagementSystem:
         for user in self.cursor.fetchall():
             print(user)
 
+    def issued_books(self):
+        self.cursor.execute("SELECT * FROM issued_books")
+        for issued_books in self.cursor.fetchall():
+            print(issued_books)
+
     def run(self):
         while True:
             print("\nLibrary Management System")
@@ -57,7 +73,8 @@ class LibraryManagementSystem:
             print("4. Return Book")
             print("5. List Books")
             print("6. List Users")
-            print("7. Exit")
+            print("7. List Issued Books")
+            print("8. Exit")
             choice = input("Enter your choice: ")
             
             if choice == "1":
@@ -69,8 +86,8 @@ class LibraryManagementSystem:
                 self.add_user(name)
             elif choice == "3":
                 book_id = int(input("Enter book ID: "))
-                user_id = int(input("Enter user ID: "))
-                self.issue_book(book_id, user_id)
+                user_name = input("Enter user name: ")
+                self.issue_book(book_id, user_name)
             elif choice == "4":
                 book_id = int(input("Enter book ID: "))
                 self.return_book(book_id)
@@ -79,9 +96,16 @@ class LibraryManagementSystem:
             elif choice == "6":
                 self.list_users()
             elif choice == "7":
+                self.issued_books()
+            elif choice == "8":
                 break
             else:
                 print("Invalid choice! Try again.")
+
+if __name__ == "__main__":
+    lms = LibraryManagementSystem()
+    lms.run()
+
 
 if __name__ == "__main__":
     lms = LibraryManagementSystem()
